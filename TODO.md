@@ -62,8 +62,8 @@ Por eso A hace primero los TODO 1 y 2 y los deja en `develop`; B y C parten de a
 ## Checklist — Persona A
 
 - [x] Crear el repo en GitHub con el entorno del curso, ramas `main`, `develop` y `fabricio`
-- [ ] Invitar a B y C como colaboradores
-- [ ] Hacer público el repo (se creó privado) o darle acceso al profesor antes de entregar
+- [x] Invitar a B y C como colaboradores
+- [x] Hacer público el repo (se creó privado) o darle acceso al profesor antes de entregar
 - [x] `make lab4-up` y correr el notebook hasta el paso 5
 - [x] **TODO 1** (paso 5.3): `MERGE` de `Persona` y de `PARTICIPA_EN`, con `rol` y `cargo` en la relación → `OK`
 - [x] **TODO 2** (paso 5.4): `MERGE` de `Fragmento`, sus propiedades y `CONTIENE` → `OK`
