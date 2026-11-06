@@ -62,15 +62,15 @@ Por eso A hace primero los TODO 1 y 2 y los deja en `develop`; B y C parten de a
 ## Checklist — Persona A
 
 - [x] Crear el repo en GitHub con el entorno del curso, ramas `main`, `develop` y `fabricio`
-- [ ] Invitar a B y C como colaboradores
-- [ ] Hacer público el repo (se creó privado) o darle acceso al profesor antes de entregar
+- [x] Invitar a B y C como colaboradores
+- [x] Hacer público el repo (se creó privado) o darle acceso al profesor antes de entregar
 - [x] `make lab4-up` y correr el notebook hasta el paso 5
 - [x] **TODO 1** (paso 5.3): `MERGE` de `Persona` y de `PARTICIPA_EN`, con `rol` y `cargo` en la relación → `OK`
 - [x] **TODO 2** (paso 5.4): `MERGE` de `Fragmento`, sus propiedades y `CONTIENE` → `OK`
 - [x] Base del informe `labs/lab4-neo4j/REPORTE.tex` con las secciones de las seis preguntas
 - [x] Pregunta 4: qué pasa con `CREATE` en lugar de `MERGE` en el TODO 1
 - [x] Pregunta 2: explicación de por qué `cargo` va en `PARTICIPA_EN`
-- [ ] Paso 6.3: captura del navegador de Neo4j para la pregunta 2
+- [x] Paso 6.3: captura del navegador de Neo4j para la pregunta 2
 - [x] Fusionar `fabricio` en `develop`
 - [ ] Ejecución final del notebook completo con salidas, guardado en el repo
 - [ ] Armar el PDF (máximo 4 páginas) y revisar la lista de control
