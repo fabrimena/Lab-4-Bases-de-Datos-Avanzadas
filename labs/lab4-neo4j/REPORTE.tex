@@ -64,9 +64,13 @@ LlamaIndex 0.14.25. El notebook se ejecutó completo con \texttt{make lab4-ejecu
 
 \section{El grafo en el navegador y el cargo (pregunta 2)}
 
-\falta{captura del paso 6.3: el camino de Gilberth a la 61-2026 y sus fragmentos, con el panel de propiedades de \texttt{PARTICIPA\_EN} abierto}
+\begin{center}
+\includegraphics[width=0.78\textwidth]{captura-paso6-3.png}\\[1pt]
+{\footnotesize\color{gris} Paso 6.3 en el navegador de Neo4j: el camino de Gilberth a la 61-2026 y sus cuatro fragmentos, con la relación \texttt{PARTICIPA\_EN} seleccionada.}
+\end{center}
 
-\texttt{Persona} representa a la persona y \texttt{PARTICIPA\_EN} representa su presencia en una sesión.
+En la captura, el cargo y el rol aparecen en el panel de la relación \texttt{PARTICIPA\_EN}; el nodo
+\texttt{Persona} solo guarda el nombre. \texttt{Persona} representa a la persona y \texttt{PARTICIPA\_EN} representa su presencia en una sesión.
 El cargo describe lo segundo: es lo que esa persona fue \emph{en esa acta}. La misma persona aparece en
 varias actas; en nuestro grafo, 17 de las 18 personas están en las cuatro y una en tres.
 
