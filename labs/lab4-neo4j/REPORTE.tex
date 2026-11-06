@@ -1,0 +1,155 @@
+\documentclass[10pt,letterpaper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noquoting,es-noshorthands]{babel}
+\usepackage{lmodern}
+\usepackage[margin=1.9cm,top=1.5cm,bottom=1.6cm]{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{fancyvrb}
+
+\definecolor{acc}{HTML}{1F4E79}
+\definecolor{gris}{HTML}{5B6672}
+
+\DeclareUnicodeCharacter{2192}{$\rightarrow$}
+
+% Marca de algo pendiente (sale en rojo). Antes de entregar no debe quedar ningún uso.
+\newcommand{\falta}[1]{{\color{red}\bfseries [FALTA: #1]}}
+
+\setlength{\parskip}{2pt}
+\setlength{\topsep}{2pt}
+\setlength{\partopsep}{0pt}
+\setlength{\parindent}{0pt}
+\renewcommand{\arraystretch}{1.05}
+\setlength{\emergencystretch}{4em}
+
+% Secciones y pie de pagina sin paquetes externos: solo LaTeX base.
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+  {7pt \@plus 2pt \@minus 1pt}{3pt}%
+  {\normalfont\normalsize\bfseries\color{acc}}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
+  {5pt \@plus 1pt}{2pt}%
+  {\normalfont\small\bfseries\color{acc}}}
+\renewcommand\@seccntformat[1]{\csname the#1\endcsname.\quad}
+\renewcommand{\ps@plain}{%
+  \renewcommand{\@oddhead}{}\renewcommand{\@evenhead}{}%
+  \renewcommand{\@oddfoot}{\footnotesize\color{gris}%
+    TI-4601 $\cdot$ Laboratorio 4 $\cdot$ Actas municipales en un grafo
+    \hfill \thepage}%
+  \renewcommand{\@evenfoot}{\@oddfoot}}
+\makeatother
+\pagestyle{plain}
+
+\fvset{fontsize=\footnotesize,frame=leftline,framerule=0.6pt,rulecolor=\color{gris},xleftmargin=6pt}
+
+\begin{document}
+
+{\LARGE\bfseries\color{acc} Laboratorio 4 --- Actas municipales en un grafo}\\[2pt]
+{\footnotesize\color{gris} TI-4601 Bases de Datos Avanzadas $\cdot$ Grupo 3 $\cdot$ Fabricio Mena $\cdot$ Alisson Redondo $\cdot$ Christopher Rodriguez}\\
+{\footnotesize\color{gris} Repositorio: \texttt{https://github.com/fabrimena/Lab-4-Bases-de-Datos-Avanzadas} (notebook en \texttt{labs/lab4-neo4j/Lab4.ipynb})}
+
+\vspace{4pt}\hrule\vspace{6pt}
+
+\textbf{Entorno.} Laptop AMD Ryzen 7 5700U, 16 GB de RAM (4 CPU y 9,7 GiB para WSL 2), Windows 11 Home con
+Ubuntu 24.04 en WSL 2 y Docker Desktop 29.5.2. Neo4j 5.26.32 Community, driver de Python 5.28.8 y
+LlamaIndex 0.14.25. El notebook se ejecutó completo con \texttt{make lab4-ejecutar}.
+
+\section{Delimitación (pregunta 1)}
+
+\falta{Alisson: documentos del índice, actas cargadas y qué hacer con un PDF escaneado, con las cifras de la salida del paso 2}
+
+\section{El grafo en el navegador y el cargo (pregunta 2)}
+
+\falta{captura del paso 6.3: el camino de Gilberth a la 61-2026 y sus fragmentos, con el panel de propiedades de \texttt{PARTICIPA\_EN} abierto}
+
+\texttt{Persona} representa a la persona y \texttt{PARTICIPA\_EN} representa su presencia en una sesión.
+El cargo describe lo segundo: es lo que esa persona fue \emph{en esa acta}. La misma persona aparece en
+varias actas; en nuestro grafo, 17 de las 18 personas están en las cuatro y una en tres.
+
+Si el cargo fuera una propiedad de \texttt{Persona}, tendría un solo valor para todas sus sesiones.
+Cuando cambie, por ejemplo porque se elige otra presidencia o porque en una sesión preside la
+vicepresidenta, el \texttt{SET} de la carga sobrescribiría el valor y el grafo diría que la persona
+siempre tuvo el último cargo cargado. Se pierde la historia y ya no se puede responder «¿quién presidió
+la 58-2026?». En la relación, cada acta guarda su propio valor, y la consulta pregunta por la relación
+y no por la persona. Es lo que comprueba la verificación del TODO 1:
+
+\begin{Verbatim}
+OK: el cargo vive en la relación: presidencia de 61-2026 = ['Gilberth González González']
+\end{Verbatim}
+
+En estas cuatro actas nadie cambió de cargo (lo revisamos con una consulta aparte): Gilberth González
+tiene cuatro relaciones con \texttt{cargo = 'Presidente'}, una por acta. Con más actas sí habría
+cambios, y el modelo ya los admite sin tocar el esquema. Lo mismo vale para \texttt{rol}: alguien puede
+ser suplente en un periodo y propietario en otro.
+
+\section{Consultas de uno y dos saltos (pregunta 3)}
+
+\falta{Alisson: consultas de los TODO 3 y 4 con su resultado, el SQL equivalente y cuántos \texttt{JOIN} necesitaría un tercer salto}
+
+\section{\texttt{CREATE} contra \texttt{MERGE} (pregunta 4)}
+
+Estas son nuestras consultas de los TODO 1 y 2. Siguen el ejemplo de las actas: \texttt{MATCH} del acta,
+\texttt{MERGE} por la clave única y \texttt{SET} del resto.
+\begin{Verbatim}
+// TODO 1                                     // TODO 2
+MATCH (a:Acta {id: $id})                      MATCH (a:Acta {id: $acta})
+MERGE (p:Persona {nombre: $nombre})           MERGE (f:Fragmento {id: $id})
+MERGE (p)-[r:PARTICIPA_EN]->(a)               SET f.indice = $indice, f.texto = $texto,
+SET r.rol = $rol, r.cargo = $cargo                f.embedding = $embedding
+                                              MERGE (a)-[:CONTIENE]->(f)
+\end{Verbatim}
+Salida del notebook. Cada verificación carga dos veces y compara los conteos:
+\begin{Verbatim}
+OK: cargar dos veces no duplica nada: (18, 71) → (18, 71)
+OK: (personas, relaciones) = (18, 71); se esperaba (18, 71)
+OK: cargar dos veces no duplica fragmentos ni relaciones
+OK: conteos {'fragmentos': 15, 'contiene': 15, 'sigue': 11};
+    se esperaba {'fragmentos': 15, 'contiene': 15, 'sigue': 11}
+OK: todos los fragmentos tienen su vector
+\end{Verbatim}
+
+Para ver qué pasa con \texttt{CREATE}, corrimos una copia del notebook hasta el paso 5.3 con dos
+variantes del TODO 1. El notebook del repositorio no se tocó.
+
+\textbf{a) \texttt{CREATE} para la persona y para la relación.}
+\begin{Verbatim}
+ConstraintError: {code: Neo.ClientError.Schema.ConstraintValidationFailed} {message: Node(0) already
+exists with label `Persona` and property `nombre` = 'Gilberth González González'}
+VERIFICACIÓN FALLÓ: la carga intentó crear de nuevo un nodo que ya existía. Use MERGE (no CREATE)
+para la persona y para la relación.
+conteo (personas, relaciones): (18, 18)
+\end{Verbatim}
+No llega a la segunda carga: falla en la primera, al pasar a la segunda acta. La 58-2026 crea sus 18
+personas, pero el primer participante de la 59-2026 es Gilberth, que ya existe, y la restricción
+\texttt{persona\_nombre} rechaza el segundo nodo. Como cada \texttt{correr} es su propia transacción, lo
+anterior queda guardado y el grafo queda a medias: solo la 58-2026 tiene participantes. Sin la
+restricción no habría error, pero quedarían 71 nodos \texttt{Persona} en lugar de 18, uno por
+participación, y las cuatro sesiones de Gilberth no estarían unidas por el mismo nodo.
+
+\textbf{b) \texttt{MERGE} para la persona y \texttt{CREATE} para la relación.}
+\begin{Verbatim}
+VERIFICACIÓN FALLÓ: cargar dos veces no duplica nada: (18, 71) → (18, 142)
+\end{Verbatim}
+Aquí Neo4j no da ningún error, porque la restricción es sobre \texttt{Persona.nombre} y no hay ninguna
+sobre relaciones. La primera carga deja bien los conteos, pero la segunda duplica las 71 relaciones:
+Gilberth queda con dos \texttt{PARTICIPA\_EN} hacia cada acta, las dos con \texttt{cargo = 'Presidente'},
+y cualquier conteo de participaciones sale doble. Es el caso más peligroso porque falla en silencio; solo
+lo detecta la verificación que carga dos veces.
+
+Con \texttt{MERGE} en los dos lugares la carga es idempotente: la segunda vez encuentra los mismos nodos
+y relaciones y solo vuelve a aplicar el \texttt{SET}. La restricción protege los nodos, pero las
+relaciones solo las protege el \texttt{MERGE}.
+
+\section{Solo vector contra vector + acta (pregunta 5)}
+
+\falta{Christopher: salida del TODO 5, comparación de «solo vector» con «vector + acta» y el papel de los 128 tokens con la salida del paso 8.2}
+
+\section{Lectura crítica del modelo (pregunta 6)}
+
+\falta{Christopher: las tres preguntas del paso 9, si cada respuesta es correcta según el contexto recuperado y qué afirma el modelo que no está en ese contexto}
+
+\end{document}
