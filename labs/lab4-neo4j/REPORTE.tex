@@ -15,6 +15,7 @@
 \definecolor{gris}{HTML}{5B6672}
 
 \DeclareUnicodeCharacter{2192}{$\rightarrow$}
+\DeclareUnicodeCharacter{2581}{\_}
 
 % Marca de algo pendiente (sale en rojo). Antes de entregar no debe quedar ningún uso.
 \newcommand{\falta}[1]{{\color{red}\bfseries [FALTA: #1]}}
@@ -150,10 +151,119 @@ relaciones solo las protege el \texttt{MERGE}.
 
 \section{Solo vector contra vector + acta (pregunta 5)}
 
-\falta{Christopher: salida del TODO 5, comparación de «solo vector» con «vector + acta» y el papel de los 128 tokens con la salida del paso 8.2}
+Nuestra consulta del TODO 5 va después de \texttt{YIELD node, score}. Sube por \texttt{CONTIENE} hasta el
+acta, filtra por \texttt{\$ids} y recorre \texttt{SIGUE} y \texttt{PARTICIPA\_EN} con \texttt{OPTIONAL MATCH}
+para que la fila no se pierda si no hay fragmento siguiente:
+\begin{Verbatim}
+MATCH (a:Acta)-[:CONTIENE]->(node)
+WHERE size($ids) = 0 OR a.id IN $ids
+OPTIONAL MATCH (node)-[:SIGUE]->(siguiente:Fragmento)
+OPTIONAL MATCH (p:Persona)-[r:PARTICIPA_EN]->(a)
+WITH node, score, a, siguiente, collect({nombre: p.nombre, rol: r.rol, cargo: r.cargo}) AS participantes
+RETURN node.id AS fragmento, node.texto AS texto, siguiente.texto AS siguiente, a.id AS acta,
+       a.tipo AS tipo, a.fecha AS fecha, a.url AS url, score, participantes
+ORDER BY score DESC LIMIT $k
+\end{Verbatim}
+Salida del paso 7 para «¿Quién preside la sesión 61-2026?» (las siete verificaciones dan \texttt{OK}):
+\begin{Verbatim}
+Solo vector:    [('60-2026', 0.819), ('58-2026', 0.814), ('61-2026', 0.81)]
+Vector + acta:  [('61-2026', 0.81), ('61-2026', 0.646), ('61-2026', 0.636)]
+\end{Verbatim}
+
+\textbf{Solo vector se equivoca de acta.} Sin el filtro, el primer fragmento es de la 60-2026 y el
+segundo de la 58-2026; el acta que pide la pregunta queda tercera. Los tres son el fragmento \texttt{\#0}
+de su acta, es decir, el encabezado: «Acta de la Sesión Ordinaria N° \ldots{} celebrada por el Concejo
+Municipal de Belén\ldots» seguido de la misma lista de participantes. Entre los tres solo cambian el
+número y la fecha, y la diferencia de score entre el primero y el tercero es de 0,009. La búsqueda
+vectorial mide qué tan \emph{parecido} es el texto, y los tres encabezados se parecen igual a la
+pregunta. Con el filtro, el índice devuelve los 15 candidatos y el camino \texttt{CONTIENE} descarta los
+que no son de la 61-2026: los tres resultados son de esa acta, y el primero es su encabezado, que nombra
+al presidente. El acta correcta sale de una relación del grafo, no de una similitud.
+
+\textbf{El papel de los 128 tokens.} Salida del paso 8.2:
+\begin{Verbatim}
+Tokens del codificador: ['▁¿', 'Quién', '▁pre', 'side', '▁la', '▁sesión', '▁61', '-20', '26', '?']
+El codificador lee como máximo 128 tokens por texto.
+Los fragmentos tienen entre 91 y 375 tokens: 12 de 15 superan el límite.
+   fragmento   coseno   (1 + coseno) / 2
+   60-2026#0   0.638    0.819
+   58-2026#0   0.627    0.814
+   61-2026#0   0.620    0.810
+\end{Verbatim}
+12 de los 15 fragmentos superan el límite, y de ellos el codificador solo ve los primeros 128 tokens.
+En los encabezados, esos 128 tokens son casi todos el mismo texto fijo y la lista de participantes,
+que es igual en las cuatro actas. Lo único que distingue a la 61-2026 es un token (\texttt{▁61} frente
+a \texttt{▁60} o \texttt{▁58}), y en un vector de 384 dimensiones que resume todo el texto ese token pesa
+muy poco. Lo que viene después del recorte (los acuerdos, las notas de pésame) no influye en el vector,
+así que tampoco ayuda a separar las actas. La tabla confirma además la escala: el score de Neo4j es
+$(1+\cos)/2$; por ejemplo, $(1+0{,}638)/2 = 0{,}819$, y el orden es el mismo que el del cálculo en Python.
 
 \section{Lectura crítica del modelo (pregunta 6)}
 
-\falta{Christopher: las tres preguntas del paso 9, si cada respuesta es correcta según el contexto recuperado y qué afirma el modelo que no está en ese contexto}
+Salida del paso 9 (Qwen2.5-0.5B-Instruct, decodificación voraz):
+\begin{Verbatim}
+Pregunta: Según el acta 61-2026, ¿quién preside la sesión?
+   contexto 61-2026#0  score=0.816 | 61-2026#1  score=0.695 | 61-2026#3  score=0.653
+Respuesta: Gilberth González González es preside la sesión Ordinaria del Concejo Municipal de
+Belén, según la acta 61-2026.
+
+Pregunta: En el acta 61-2026, ¿qué acta anterior se somete a aprobación?
+   contexto 61-2026#0  score=0.770 | 61-2026#1  score=0.697 | 61-2026#3  score=0.675
+Respuesta: El acta 61-2026 se somete a aprobación al acta 61-2026.
+
+Pregunta: ¿En qué sesión se acordó enviar una nota de pésame?
+   contexto 60-2026#3  score=0.750 | 58-2026#0  score=0.705 | 61-2026#0  score=0.698
+Respuesta: La nota de pésame fue enviada en la sesión ordinaria del 2026-10-13, cuando se
+celebraba la sesión extraordinaria.
+\end{Verbatim}
+
+\begin{center}\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.36\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.32\textwidth}@{}}
+\toprule
+Pregunta & Qué dice el contexto recuperado & ¿Correcta? & Alucinación \\
+\midrule
+1. Presidencia &
+Los hechos del grafo dicen «Presidente: Gilberth González González», y el encabezado \texttt{61-2026\#0} lo repite. &
+Sí &
+Ninguna. Solo un error de redacción («es preside»). \\
+\addlinespace
+2. Acta que se aprueba &
+\texttt{61-2026\#1}: «somete a aprobación el Acta de la Sesión Ordinaria N°60-2026». &
+No &
+Sí: dice que la 61-2026 se aprueba a sí misma. La respuesta (60-2026) estaba en el contexto. \\
+\addlinespace
+3. Nota de pésame &
+Ningún fragmento recuperado habla de pésame. \texttt{60-2026\#3} menciona la «Sesión Extraordinaria No.50-2026»;
+los otros dos son encabezados. &
+No (por el contexto) &
+Sí: afirma una fecha y una «sesión extraordinaria» que el contexto no respalda, y no cita ningún acta. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Pregunta 1.} Es la única que funciona como se espera: la pregunta nombra el acta, el filtro deja
+solo fragmentos de la 61-2026 y el cargo llega como hecho del grafo desde \texttt{PARTICIPA\_EN}. El modelo
+solo tiene que copiarlo. La verificación final lo confirma: «la primera respuesta sí nombra a quien el
+grafo registra como Presidente».
+
+\textbf{Pregunta 2.} La recuperación fue buena: el fragmento \texttt{61-2026\#1} trae la respuesta textual
+(la 60-2026). El que falló es el generador: repitió el único id que aparece en la pregunta y en los
+hechos, y produjo una frase circular. Es una alucinación \emph{dentro} del contexto correcto. La
+verificación del notebook no la detecta, porque solo revisa que las actas citadas aparezcan en el
+contexto, y la 61-2026 aparece.
+
+\textbf{Pregunta 3.} Como la pregunta no nombra un acta, \texttt{\$ids} va vacía y solo cuenta el vector.
+Los fragmentos que de verdad hablan de las notas de pésame (\texttt{61-2026\#2} y \texttt{\#3}, sobre don
+William Álvarez y don Elías Núñez) no quedaron entre los tres primeros: ganaron un oficio de la
+60-2026 y dos encabezados, por el mismo efecto de la pregunta 5. Con ese contexto la respuesta correcta
+era «no aparece en el contexto». El modelo, en cambio, tomó la fecha 2026-10-13 de los hechos del grafo
+(es la fecha de la 61-2026) y la «sesión extraordinaria» del oficio de la 60-2026, y mezcló las dos. Por
+casualidad la fecha coincide con la sesión real, pero el contexto no la respalda: es una alucinación que
+suena plausible. Tampoco cita un acta, y por eso la verificación da \texttt{OK} («ninguna»).
+
+En resumen: cuando la pregunta nombra el acta, el grafo corrige la recuperación (preguntas 1 y 2); cuando
+no la nombra, queda solo el vector y el contexto puede no contener la respuesta (pregunta 3). Y aun con
+el contexto correcto, un modelo de 494 millones de parámetros puede equivocarse al leerlo (pregunta 2).
+Que la verificación pase no significa que la respuesta sea correcta: hay que leerla contra el contexto.
 
 \end{document}
