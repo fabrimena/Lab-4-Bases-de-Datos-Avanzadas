@@ -87,11 +87,11 @@ Por eso A hace primero los TODO 1 y 2 y los deja en `develop`; B y C parten de a
 
 ## Checklist — Persona C
 
-- [ ] Crear la rama `chris` desde `develop` (con los TODO 1 y 2 ya fusionados)
+- [x] Crear la rama `chris` desde `develop` (con los TODO 1 y 2 ya fusionados)
 - [x] **TODO 5** (paso 7): recorrido de caminos después de la búsqueda vectorial (`OPTIONAL MATCH`, `collect`) → `OK`
 - [x] Pregunta 5: «solo vector» contra «vector + acta» con la salida del TODO 5, y el papel de los 128 tokens (salida del paso 8.2)
 - [x] Pregunta 6: para las tres preguntas del paso 9, si la respuesta es correcta según el contexto recuperado, con las alucinaciones señaladas
-- [ ] PR de `chris` a `develop`
+- [x] PR de `chris` a `develop`
 
 ---
 
