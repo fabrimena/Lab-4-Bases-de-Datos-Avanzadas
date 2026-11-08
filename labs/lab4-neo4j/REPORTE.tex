@@ -15,6 +15,7 @@
 \definecolor{gris}{HTML}{5B6672}
 
 \DeclareUnicodeCharacter{2192}{$\rightarrow$}
+\DeclareUnicodeCharacter{2581}{\_}
 
 % Marca de algo pendiente (sale en rojo). Antes de entregar no debe quedar ningún uso.
 \newcommand{\falta}[1]{{\color{red}\bfseries [FALTA: #1]}}
@@ -150,7 +151,52 @@ relaciones solo las protege el \texttt{MERGE}.
 
 \section{Solo vector contra vector + acta (pregunta 5)}
 
-\falta{Christopher: salida del TODO 5, comparación de «solo vector» con «vector + acta» y el papel de los 128 tokens con la salida del paso 8.2}
+Nuestra consulta del TODO 5 va después de \texttt{YIELD node, score}. Sube por \texttt{CONTIENE} hasta el
+acta, filtra por \texttt{\$ids} y recorre \texttt{SIGUE} y \texttt{PARTICIPA\_EN} con \texttt{OPTIONAL MATCH}
+para que la fila no se pierda si no hay fragmento siguiente:
+\begin{Verbatim}
+MATCH (a:Acta)-[:CONTIENE]->(node)
+WHERE size($ids) = 0 OR a.id IN $ids
+OPTIONAL MATCH (node)-[:SIGUE]->(siguiente:Fragmento)
+OPTIONAL MATCH (p:Persona)-[r:PARTICIPA_EN]->(a)
+WITH node, score, a, siguiente, collect({nombre: p.nombre, rol: r.rol, cargo: r.cargo}) AS participantes
+RETURN node.id AS fragmento, node.texto AS texto, siguiente.texto AS siguiente, a.id AS acta,
+       a.tipo AS tipo, a.fecha AS fecha, a.url AS url, score, participantes
+ORDER BY score DESC LIMIT $k
+\end{Verbatim}
+Salida del paso 7 para «¿Quién preside la sesión 61-2026?» (las siete verificaciones dan \texttt{OK}):
+\begin{Verbatim}
+Solo vector:    [('60-2026', 0.819), ('58-2026', 0.814), ('61-2026', 0.81)]
+Vector + acta:  [('61-2026', 0.81), ('61-2026', 0.646), ('61-2026', 0.636)]
+\end{Verbatim}
+
+\textbf{Solo vector se equivoca de acta.} Sin el filtro, el primer fragmento es de la 60-2026 y el
+segundo de la 58-2026; el acta que pide la pregunta queda tercera. Los tres son el fragmento \texttt{\#0}
+de su acta, es decir, el encabezado: «Acta de la Sesión Ordinaria N° \ldots{} celebrada por el Concejo
+Municipal de Belén\ldots» seguido de la misma lista de participantes. Entre los tres solo cambian el
+número y la fecha, y la diferencia de score entre el primero y el tercero es de 0,009. La búsqueda
+vectorial mide qué tan \emph{parecido} es el texto, y los tres encabezados se parecen igual a la
+pregunta. Con el filtro, el índice devuelve los 15 candidatos y el camino \texttt{CONTIENE} descarta los
+que no son de la 61-2026: los tres resultados son de esa acta, y el primero es su encabezado, que nombra
+al presidente. El acta correcta sale de una relación del grafo, no de una similitud.
+
+\textbf{El papel de los 128 tokens.} Salida del paso 8.2:
+\begin{Verbatim}
+Tokens del codificador: ['▁¿', 'Quién', '▁pre', 'side', '▁la', '▁sesión', '▁61', '-20', '26', '?']
+El codificador lee como máximo 128 tokens por texto.
+Los fragmentos tienen entre 91 y 375 tokens: 12 de 15 superan el límite.
+   fragmento   coseno   (1 + coseno) / 2
+   60-2026#0   0.638    0.819
+   58-2026#0   0.627    0.814
+   61-2026#0   0.620    0.810
+\end{Verbatim}
+12 de los 15 fragmentos superan el límite, y de ellos el codificador solo ve los primeros 128 tokens.
+En los encabezados, esos 128 tokens son casi todos el mismo texto fijo y la lista de participantes,
+que es igual en las cuatro actas. Lo único que distingue a la 61-2026 es un token (\texttt{▁61} frente
+a \texttt{▁60} o \texttt{▁58}), y en un vector de 384 dimensiones que resume todo el texto ese token pesa
+muy poco. Lo que viene después del recorte (los acuerdos, las notas de pésame) no influye en el vector,
+así que tampoco ayuda a separar las actas. La tabla confirma además la escala: el score de Neo4j es
+$(1+\cos)/2$; por ejemplo, $(1+0{,}638)/2 = 0{,}819$, y el orden es el mismo que el del cálculo en Python.
 
 \section{Lectura crítica del modelo (pregunta 6)}
 
