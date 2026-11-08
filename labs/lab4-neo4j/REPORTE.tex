@@ -200,6 +200,70 @@ $(1+\cos)/2$; por ejemplo, $(1+0{,}638)/2 = 0{,}819$, y el orden es el mismo que
 
 \section{Lectura crítica del modelo (pregunta 6)}
 
-\falta{Christopher: las tres preguntas del paso 9, si cada respuesta es correcta según el contexto recuperado y qué afirma el modelo que no está en ese contexto}
+Salida del paso 9 (Qwen2.5-0.5B-Instruct, decodificación voraz):
+\begin{Verbatim}
+Pregunta: Según el acta 61-2026, ¿quién preside la sesión?
+   contexto 61-2026#0  score=0.816 | 61-2026#1  score=0.695 | 61-2026#3  score=0.653
+Respuesta: Gilberth González González es preside la sesión Ordinaria del Concejo Municipal de
+Belén, según la acta 61-2026.
+
+Pregunta: En el acta 61-2026, ¿qué acta anterior se somete a aprobación?
+   contexto 61-2026#0  score=0.770 | 61-2026#1  score=0.697 | 61-2026#3  score=0.675
+Respuesta: El acta 61-2026 se somete a aprobación al acta 61-2026.
+
+Pregunta: ¿En qué sesión se acordó enviar una nota de pésame?
+   contexto 60-2026#3  score=0.750 | 58-2026#0  score=0.705 | 61-2026#0  score=0.698
+Respuesta: La nota de pésame fue enviada en la sesión ordinaria del 2026-10-13, cuando se
+celebraba la sesión extraordinaria.
+\end{Verbatim}
+
+\begin{center}\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.36\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.32\textwidth}@{}}
+\toprule
+Pregunta & Qué dice el contexto recuperado & ¿Correcta? & Alucinación \\
+\midrule
+1. Presidencia &
+Los hechos del grafo dicen «Presidente: Gilberth González González», y el encabezado \texttt{61-2026\#0} lo repite. &
+Sí &
+Ninguna. Solo un error de redacción («es preside»). \\
+\addlinespace
+2. Acta que se aprueba &
+\texttt{61-2026\#1}: «somete a aprobación el Acta de la Sesión Ordinaria N°60-2026». &
+No &
+Sí: dice que la 61-2026 se aprueba a sí misma. La respuesta (60-2026) estaba en el contexto. \\
+\addlinespace
+3. Nota de pésame &
+Ningún fragmento recuperado habla de pésame. \texttt{60-2026\#3} menciona la «Sesión Extraordinaria No.50-2026»;
+los otros dos son encabezados. &
+No (por el contexto) &
+Sí: afirma una fecha y una «sesión extraordinaria» que el contexto no respalda, y no cita ningún acta. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Pregunta 1.} Es la única que funciona como se espera: la pregunta nombra el acta, el filtro deja
+solo fragmentos de la 61-2026 y el cargo llega como hecho del grafo desde \texttt{PARTICIPA\_EN}. El modelo
+solo tiene que copiarlo. La verificación final lo confirma: «la primera respuesta sí nombra a quien el
+grafo registra como Presidente».
+
+\textbf{Pregunta 2.} La recuperación fue buena: el fragmento \texttt{61-2026\#1} trae la respuesta textual
+(la 60-2026). El que falló es el generador: repitió el único id que aparece en la pregunta y en los
+hechos, y produjo una frase circular. Es una alucinación \emph{dentro} del contexto correcto. La
+verificación del notebook no la detecta, porque solo revisa que las actas citadas aparezcan en el
+contexto, y la 61-2026 aparece.
+
+\textbf{Pregunta 3.} Como la pregunta no nombra un acta, \texttt{\$ids} va vacía y solo cuenta el vector.
+Los fragmentos que de verdad hablan de las notas de pésame (\texttt{61-2026\#2} y \texttt{\#3}, sobre don
+William Álvarez y don Elías Núñez) no quedaron entre los tres primeros: ganaron un oficio de la
+60-2026 y dos encabezados, por el mismo efecto de la pregunta 5. Con ese contexto la respuesta correcta
+era «no aparece en el contexto». El modelo, en cambio, tomó la fecha 2026-10-13 de los hechos del grafo
+(es la fecha de la 61-2026) y la «sesión extraordinaria» del oficio de la 60-2026, y mezcló las dos. Por
+casualidad la fecha coincide con la sesión real, pero el contexto no la respalda: es una alucinación que
+suena plausible. Tampoco cita un acta, y por eso la verificación da \texttt{OK} («ninguna»).
+
+En resumen: cuando la pregunta nombra el acta, el grafo corrige la recuperación (preguntas 1 y 2); cuando
+no la nombra, queda solo el vector y el contexto puede no contener la respuesta (pregunta 3). Y aun con
+el contexto correcto, un modelo de 494 millones de parámetros puede equivocarse al leerlo (pregunta 2).
+Que la verificación pase no significa que la respuesta sea correcta: hay que leerla contra el contexto.
 
 \end{document}
