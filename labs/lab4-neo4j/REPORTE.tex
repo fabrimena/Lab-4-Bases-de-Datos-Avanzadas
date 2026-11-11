@@ -57,7 +57,8 @@
 
 \textbf{Entorno.} Laptop AMD Ryzen 7 5700U, 16 GB de RAM (4 CPU y 9,7 GiB para WSL 2), Windows 11 Home con
 Ubuntu 24.04 en WSL 2 y Docker Desktop 29.5.2. Neo4j 5.26.32 Community, driver de Python 5.28.8 y
-LlamaIndex 0.14.25. El notebook se ejecutó completo con \texttt{make lab4-ejecutar}.
+LlamaIndex 0.14.25. Las salidas pegadas son de la ejecución final del 11 de noviembre, con el grafo vacío al
+empezar y el notebook completo con \texttt{make lab4-ejecutar}; es la que queda guardada en el repositorio.
 
 \section{Delimitación (pregunta 1)}
 
@@ -117,28 +118,17 @@ ser suplente en un periodo y propietario en otro.
 \textbf{TODO 3: un salto.}
 Se recorre la relación \texttt{CONTIENE} entre cada acta
 y sus fragmentos. \texttt{count(f)} permite agruparlos
-por acta sin utilizar \texttt{GROUP BY}.
+por acta sin utilizar \texttt{GROUP BY}. La consulta a la izquierda y el SQL equivalente a la derecha:
 
+\noindent\begin{minipage}[t]{0.48\textwidth}
 \begin{Verbatim}
 MATCH (a:Acta)-[:CONTIENE]->(f:Fragmento)
 RETURN a.id AS acta, a.tipo AS tipo,
        a.fecha AS fecha, count(f) AS fragmentos
 ORDER BY acta ASC
 \end{Verbatim}
-
-Salida del notebook:
-
-\begin{Verbatim}
-58-2026 | Ordinaria      | 2026-09-29 | 4
-59-2026 | Extraordinaria | 2026-10-01 | 3
-60-2026 | Ordinaria      | 2026-10-06 | 4
-61-2026 | Ordinaria      | 2026-10-13 | 4
-OK: una fila por acta, con las columnas
-    acta, tipo, fecha y fragmentos
-\end{Verbatim}
-
-SQL equivalente:
-
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
 \begin{Verbatim}
 SELECT a.id AS acta, a.tipo, a.fecha,
        COUNT(*) AS fragmentos
@@ -147,6 +137,16 @@ JOIN fragmento f ON f.acta_id = a.id
 GROUP BY a.id, a.tipo, a.fecha
 ORDER BY a.id;
 \end{Verbatim}
+\end{minipage}
+
+Salida del notebook:
+\begin{Verbatim}
+   {'acta': '58-2026', 'tipo': 'Ordinaria', 'fecha': '2026-09-29', 'fragmentos': 4}
+   {'acta': '59-2026', 'tipo': 'Extraordinaria', 'fecha': '2026-10-01', 'fragmentos': 3}
+   {'acta': '60-2026', 'tipo': 'Ordinaria', 'fecha': '2026-10-06', 'fragmentos': 4}
+   {'acta': '61-2026', 'tipo': 'Ordinaria', 'fecha': '2026-10-13', 'fragmentos': 4}
+OK: una fila por acta, con las columnas acta, tipo, fecha y fragmentos
+\end{Verbatim}
 
 \textbf{TODO 4: dos saltos.}
 Se recorre el camino
@@ -154,6 +154,7 @@ Se recorre el camino
 La consulta filtra por participante y por palabra
 sin distinguir mayúsculas de minúsculas.
 
+\noindent\begin{minipage}[t]{0.48\textwidth}
 \begin{Verbatim}
 MATCH (p:Persona)-[:PARTICIPA_EN]->(a:Acta)
       -[:CONTIENE]->(f:Fragmento)
@@ -162,23 +163,8 @@ WHERE p.nombre = $nombre
 RETURN a.id AS acta, f.id AS fragmento
 ORDER BY acta ASC, f.indice ASC
 \end{Verbatim}
-
-Salida del notebook:
-
-\begin{Verbatim}
-Ana Betty Valenciano Moscoso + "pésame":
-  61-2026#1, 61-2026#2
-
-Zeneida Chaves Fernández + "aprobación":
-  58-2026#0, 58-2026#1,
-  60-2026#0, 60-2026#1,
-  61-2026#0, 61-2026#1
-
-OK: dos saltos correctos para ambos casos
-\end{Verbatim}
-
-SQL equivalente:
-
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
 \begin{Verbatim}
 SELECT a.id AS acta, f.id AS fragmento
 FROM persona p
@@ -189,6 +175,17 @@ WHERE p.nombre = :nombre
   AND LOWER(f.texto) LIKE
       '%' || LOWER(:palabra) || '%'
 ORDER BY a.id, f.indice;
+\end{Verbatim}
+\end{minipage}
+
+Salida del notebook:
+\begin{Verbatim}[fontsize=\scriptsize]
+OK: el corpus tiene al menos un caso con resultados
+
+   Ana Betty Valenciano Moscoso + «pésame»: ['61-2026#1', '61-2026#2']
+OK: dos saltos correctos para Ana Betty Valenciano Moscoso y «pésame»
+   Zeneida Chaves Fernández + «aprobación»: ['58-2026#0', '58-2026#1', '60-2026#0', '60-2026#1', '61-2026#0', '61-2026#1']
+OK: dos saltos correctos para Zeneida Chaves Fernández y «aprobación»
 \end{Verbatim}
 
 \textbf{Comparación.}
@@ -311,18 +308,22 @@ $(1+\cos)/2$; por ejemplo, $(1+0{,}638)/2 = 0{,}819$, y el orden es el mismo que
 Salida del paso 9 (Qwen2.5-0.5B-Instruct, decodificación voraz):
 \begin{Verbatim}
 Pregunta: Según el acta 61-2026, ¿quién preside la sesión?
-   contexto 61-2026#0  score=0.816 | 61-2026#1  score=0.695 | 61-2026#3  score=0.653
-Respuesta: Gilberth González González es preside la sesión Ordinaria del Concejo Municipal de
-Belén, según la acta 61-2026.
+   contexto 61-2026#0  score=0.816
+   contexto 61-2026#1  score=0.695
+   contexto 61-2026#3  score=0.653
+Respuesta: Gilberth González González es preside la sesión Ordinaria del 2026-10-13.
 
 Pregunta: En el acta 61-2026, ¿qué acta anterior se somete a aprobación?
-   contexto 61-2026#0  score=0.770 | 61-2026#1  score=0.697 | 61-2026#3  score=0.675
+   contexto 61-2026#0  score=0.770
+   contexto 61-2026#1  score=0.697
+   contexto 61-2026#3  score=0.675
 Respuesta: El acta 61-2026 se somete a aprobación al acta 61-2026.
 
 Pregunta: ¿En qué sesión se acordó enviar una nota de pésame?
-   contexto 60-2026#3  score=0.750 | 58-2026#0  score=0.705 | 61-2026#0  score=0.698
-Respuesta: La nota de pésame fue enviada en la sesión ordinaria del 2026-10-13, cuando se
-celebraba la sesión extraordinaria.
+   contexto 60-2026#3  score=0.750
+   contexto 58-2026#0  score=0.705
+   contexto 61-2026#0  score=0.698
+Respuesta: La nota de pésame fue enviada en la sesión ordinaria del 2026-10-13.
 \end{Verbatim}
 
 \begin{center}\small
@@ -333,7 +334,7 @@ Pregunta & Qué dice el contexto recuperado & ¿Correcta? & Alucinación \\
 1. Presidencia &
 Los hechos del grafo dicen «Presidente: Gilberth González González», y el encabezado \texttt{61-2026\#0} lo repite. &
 Sí &
-Ninguna. Solo un error de redacción («es preside»). \\
+Ninguna: la fecha también está en los hechos. Solo un error de redacción («es preside») y no cita el acta. \\
 \addlinespace
 2. Acta que se aprueba &
 \texttt{61-2026\#1}: «somete a aprobación el Acta de la Sesión Ordinaria N°60-2026». &
@@ -344,7 +345,7 @@ Sí: dice que la 61-2026 se aprueba a sí misma. La respuesta (60-2026) estaba e
 Ningún fragmento recuperado habla de pésame. \texttt{60-2026\#3} menciona la «Sesión Extraordinaria No.50-2026»;
 los otros dos son encabezados. &
 No (por el contexto) &
-Sí: afirma una fecha y una «sesión extraordinaria» que el contexto no respalda, y no cita ningún acta. \\
+Sí: afirma una sesión (la ordinaria del 2026-10-13) que el contexto no respalda, y no cita ningún acta. \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -361,13 +362,13 @@ verificación del notebook no la detecta, porque solo revisa que las actas citad
 contexto, y la 61-2026 aparece.
 
 \textbf{Pregunta 3.} Como la pregunta no nombra un acta, \texttt{\$ids} va vacía y solo cuenta el vector.
-Los fragmentos que de verdad hablan de las notas de pésame (\texttt{61-2026\#2} y \texttt{\#3}, sobre don
+Los fragmentos que de verdad hablan de las notas de pésame (\texttt{61-2026\#1} a \texttt{\#3}, sobre don
 William Álvarez y don Elías Núñez) no quedaron entre los tres primeros: ganaron un oficio de la
 60-2026 y dos encabezados, por el mismo efecto de la pregunta 5. Con ese contexto la respuesta correcta
-era «no aparece en el contexto». El modelo, en cambio, tomó la fecha 2026-10-13 de los hechos del grafo
-(es la fecha de la 61-2026) y la «sesión extraordinaria» del oficio de la 60-2026, y mezcló las dos. Por
-casualidad la fecha coincide con la sesión real, pero el contexto no la respalda: es una alucinación que
-suena plausible. Tampoco cita un acta, y por eso la verificación da \texttt{OK} («ninguna»).
+era «no aparece en el contexto». El modelo, en cambio, tomó de los hechos del grafo el tipo y la fecha de
+la 61-2026 («sesión Ordinaria del 2026-10-13») y los presentó como la sesión de la nota de pésame. Por
+casualidad coincide con la sesión real, pero el contexto no la respalda: es una alucinación que suena
+plausible. Tampoco cita un acta, y por eso la verificación da \texttt{OK} («ninguna»).
 
 En resumen: cuando la pregunta nombra el acta, el grafo corrige la recuperación (preguntas 1 y 2); cuando
 no la nombra, queda solo el vector y el contexto puede no contener la respuesta (pregunta 3). Y aun con
