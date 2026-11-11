@@ -72,7 +72,7 @@ Por eso A hace primero los TODO 1 y 2 y los deja en `develop`; B y C parten de a
 - [x] Pregunta 2: explicación de por qué `cargo` va en `PARTICIPA_EN`
 - [x] Paso 6.3: captura del navegador de Neo4j para la pregunta 2
 - [x] Fusionar `fabricio` en `develop`
-- [ ] Ejecución final del notebook completo con salidas, guardado en el repo
+- [x] Ejecución final del notebook completo con salidas, guardado en el repo
 - [ ] Armar el PDF (máximo 4 páginas) y revisar la lista de control
 - [ ] Fusionar `develop` en `main` y entregar en TEC Digital
 
@@ -97,8 +97,8 @@ Por eso A hace primero los TODO 1 y 2 y los deja en `develop`; B y C parten de a
 
 ## Lista de control final
 
-- [ ] Los cinco TODO en `OK` en el resumen final del notebook
-- [ ] El notebook del repo tiene las salidas de la ejecución final
+- [x] Los cinco TODO en `OK` en el resumen final del notebook
+- [x] El notebook del repo tiene las salidas de la ejecución final
 - [ ] La captura del paso 6.3 está en el informe
 - [ ] Las seis preguntas respondidas con salidas pegadas del notebook
 - [ ] PDF de 4 páginas como máximo, con el enlace al repo
