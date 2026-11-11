@@ -74,7 +74,7 @@ Por eso A hace primero los TODO 1 y 2 y los deja en `develop`; B y C parten de a
 - [x] Fusionar `fabricio` en `develop`
 - [x] Ejecución final del notebook completo con salidas, guardado en el repo
 - [x] Armar el PDF (máximo 4 páginas) y revisar la lista de control
-- [ ] Fusionar `develop` en `main` y entregar en TEC Digital
+- [x] Fusionar `develop` en `main` y entregar en TEC Digital
 
 ## Checklist — Persona B
 
