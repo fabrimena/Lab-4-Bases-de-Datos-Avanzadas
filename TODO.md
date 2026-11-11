@@ -61,44 +61,45 @@ Por eso A hace primero los TODO 1 y 2 y los deja en `develop`; B y C parten de a
 
 ## Checklist — Persona A
 
-- [ ] Crear el repo en GitHub con el entorno del curso, ramas `main`, `develop` y `fabricio`
-- [ ] Invitar a B y C como colaboradores
-- [ ] `make lab4-up` y correr el notebook hasta el paso 5
-- [ ] **TODO 1** (paso 5.3): `MERGE` de `Persona` y de `PARTICIPA_EN`, con `rol` y `cargo` en la relación → `OK`
-- [ ] **TODO 2** (paso 5.4): `MERGE` de `Fragmento`, sus propiedades y `CONTIENE` → `OK`
-- [ ] Base del informe `labs/lab4-neo4j/REPORTE.tex` con las secciones de las seis preguntas
-- [ ] Pregunta 4: qué pasa con `CREATE` en lugar de `MERGE` en el TODO 1
-- [ ] Pregunta 2: explicación de por qué `cargo` va en `PARTICIPA_EN`
-- [ ] Paso 6.3: captura del navegador de Neo4j para la pregunta 2
-- [ ] Fusionar `fabricio` en `develop`
-- [ ] Ejecución final del notebook completo con salidas, guardado en el repo
-- [ ] Armar el PDF (máximo 4 páginas) y revisar la lista de control
+- [x] Crear el repo en GitHub con el entorno del curso, ramas `main`, `develop` y `fabricio`
+- [x] Invitar a B y C como colaboradores
+- [x] Hacer público el repo (se creó privado) o darle acceso al profesor antes de entregar
+- [x] `make lab4-up` y correr el notebook hasta el paso 5
+- [x] **TODO 1** (paso 5.3): `MERGE` de `Persona` y de `PARTICIPA_EN`, con `rol` y `cargo` en la relación → `OK`
+- [x] **TODO 2** (paso 5.4): `MERGE` de `Fragmento`, sus propiedades y `CONTIENE` → `OK`
+- [x] Base del informe `labs/lab4-neo4j/REPORTE.tex` con las secciones de las seis preguntas
+- [x] Pregunta 4: qué pasa con `CREATE` en lugar de `MERGE` en el TODO 1
+- [x] Pregunta 2: explicación de por qué `cargo` va en `PARTICIPA_EN`
+- [x] Paso 6.3: captura del navegador de Neo4j para la pregunta 2
+- [x] Fusionar `fabricio` en `develop`
+- [x] Ejecución final del notebook completo con salidas, guardado en el repo
+- [x] Armar el PDF (máximo 4 páginas) y revisar la lista de control
 - [ ] Fusionar `develop` en `main` y entregar en TEC Digital
 
 ## Checklist — Persona B
 
-- [ ] Crear la rama `alisson` desde `develop` (con los TODO 1 y 2 ya fusionados)
-- [ ] **TODO 3** (paso 6.1): un salto, fragmentos por acta con agregación → `OK`
-- [ ] **TODO 4** (paso 6.2): dos saltos `Persona → Acta → Fragmento` filtrado por palabra → `OK`
-- [ ] Pregunta 3: consultas de los TODO 3 y 4 con su resultado, SQL equivalente y cuántos `JOIN` necesitaría un tercer salto
-- [ ] Pregunta 1: cuántos documentos publica el índice, cuántas actas entraron al grafo y qué haríamos con un PDF escaneado (cifras de la salida del paso 2)
-- [ ] PR de `alisson` a `develop`
+- [X] Crear la rama `alisson` desde `develop` (con los TODO 1 y 2 ya fusionados)
+- [X] **TODO 3** (paso 6.1): un salto, fragmentos por acta con agregación → `OK`
+- [X] **TODO 4** (paso 6.2): dos saltos `Persona → Acta → Fragmento` filtrado por palabra → `OK`
+- [x] Pregunta 3: consultas de los TODO 3 y 4 con su resultado, SQL equivalente y cuántos `JOIN` necesitaría un tercer salto
+- [x] Pregunta 1: cuántos documentos publica el índice, cuántas actas entraron al grafo y qué haríamos con un PDF escaneado (cifras de la salida del paso 2)
+- [x] PR de `alisson` a `develop`
 
 ## Checklist — Persona C
 
-- [ ] Crear la rama `chris` desde `develop` (con los TODO 1 y 2 ya fusionados)
-- [ ] **TODO 5** (paso 7): recorrido de caminos después de la búsqueda vectorial (`OPTIONAL MATCH`, `collect`) → `OK`
-- [ ] Pregunta 5: «solo vector» contra «vector + acta» con la salida del TODO 5, y el papel de los 128 tokens (salida del paso 8.2)
-- [ ] Pregunta 6: para las tres preguntas del paso 9, si la respuesta es correcta según el contexto recuperado, con las alucinaciones señaladas
-- [ ] PR de `chris` a `develop`
+- [x] Crear la rama `chris` desde `develop` (con los TODO 1 y 2 ya fusionados)
+- [x] **TODO 5** (paso 7): recorrido de caminos después de la búsqueda vectorial (`OPTIONAL MATCH`, `collect`) → `OK`
+- [x] Pregunta 5: «solo vector» contra «vector + acta» con la salida del TODO 5, y el papel de los 128 tokens (salida del paso 8.2)
+- [x] Pregunta 6: para las tres preguntas del paso 9, si la respuesta es correcta según el contexto recuperado, con las alucinaciones señaladas
+- [x] PR de `chris` a `develop`
 
 ---
 
 ## Lista de control final
 
-- [ ] Los cinco TODO en `OK` en el resumen final del notebook
-- [ ] El notebook del repo tiene las salidas de la ejecución final
-- [ ] La captura del paso 6.3 está en el informe
-- [ ] Las seis preguntas respondidas con salidas pegadas del notebook
-- [ ] PDF de 4 páginas como máximo, con el enlace al repo
-- [ ] Commits de los tres integrantes, repartidos en los días
+- [x] Los cinco TODO en `OK` en el resumen final del notebook
+- [x] El notebook del repo tiene las salidas de la ejecución final
+- [x] La captura del paso 6.3 está en el informe
+- [x] Las seis preguntas respondidas con salidas pegadas del notebook
+- [x] PDF de 4 páginas como máximo, con el enlace al repo
+- [x] Commits de los tres integrantes, repartidos en los días
