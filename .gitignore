@@ -10,3 +10,6 @@ tmp/
 venv/
 .vscode/
 labs/*/data/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/

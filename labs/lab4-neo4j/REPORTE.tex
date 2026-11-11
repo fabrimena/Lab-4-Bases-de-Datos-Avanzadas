@@ -61,7 +61,27 @@ LlamaIndex 0.14.25. El notebook se ejecutó completo con \texttt{make lab4-ejecu
 
 \section{Delimitación (pregunta 1)}
 
-\falta{Alisson: documentos del índice, actas cargadas y qué hacer con un PDF escaneado, con las cifras de la salida del paso 2}
+
+El índice de actas municipales de Belén publica 4234 documentos.
+Para el laboratorio se seleccionaron cuatro actas:
+58-2026, 59-2026, 60-2026 y 61-2026.
+De cada PDF se extrajo el texto de sus primeras dos páginas,
+con el cual se construyó el grafo en Neo4j.
+
+\begin{Verbatim}
+El índice publica 4234 documentos. El corpus usa 4.
+OK: 58-2026 tiene texto extraíble en sus primeras 2 páginas
+OK: 59-2026 tiene texto extraíble en sus primeras 2 páginas
+OK: 60-2026 tiene texto extraíble en sus primeras 2 páginas
+OK: 61-2026 tiene texto extraíble en sus primeras 2 páginas
+\end{Verbatim}
+
+Si un PDF fuera únicamente una imagen escaneada, no sería
+posible extraer directamente su contenido como texto.
+Se aplicaría reconocimiento óptico de caracteres (OCR),
+seguido de una revisión y limpieza del texto obtenido,
+antes de incorporarlo al proceso de fragmentación y
+carga en Neo4j.
 
 \section{El grafo en el navegador y el cargo (pregunta 2)}
 
@@ -93,7 +113,95 @@ ser suplente en un periodo y propietario en otro.
 
 \section{Consultas de uno y dos saltos (pregunta 3)}
 
-\falta{Alisson: consultas de los TODO 3 y 4 con su resultado, el SQL equivalente y cuántos \texttt{JOIN} necesitaría un tercer salto}
+
+\textbf{TODO 3: un salto.}
+Se recorre la relación \texttt{CONTIENE} entre cada acta
+y sus fragmentos. \texttt{count(f)} permite agruparlos
+por acta sin utilizar \texttt{GROUP BY}.
+
+\begin{Verbatim}
+MATCH (a:Acta)-[:CONTIENE]->(f:Fragmento)
+RETURN a.id AS acta, a.tipo AS tipo,
+       a.fecha AS fecha, count(f) AS fragmentos
+ORDER BY acta ASC
+\end{Verbatim}
+
+Salida del notebook:
+
+\begin{Verbatim}
+58-2026 | Ordinaria      | 2026-09-29 | 4
+59-2026 | Extraordinaria | 2026-10-01 | 3
+60-2026 | Ordinaria      | 2026-10-06 | 4
+61-2026 | Ordinaria      | 2026-10-13 | 4
+OK: una fila por acta, con las columnas
+    acta, tipo, fecha y fragmentos
+\end{Verbatim}
+
+SQL equivalente:
+
+\begin{Verbatim}
+SELECT a.id AS acta, a.tipo, a.fecha,
+       COUNT(*) AS fragmentos
+FROM acta a
+JOIN fragmento f ON f.acta_id = a.id
+GROUP BY a.id, a.tipo, a.fecha
+ORDER BY a.id;
+\end{Verbatim}
+
+\textbf{TODO 4: dos saltos.}
+Se recorre el camino
+\texttt{Persona -> Acta -> Fragmento}.
+La consulta filtra por participante y por palabra
+sin distinguir mayúsculas de minúsculas.
+
+\begin{Verbatim}
+MATCH (p:Persona)-[:PARTICIPA_EN]->(a:Acta)
+      -[:CONTIENE]->(f:Fragmento)
+WHERE p.nombre = $nombre
+  AND toLower(f.texto) CONTAINS toLower($palabra)
+RETURN a.id AS acta, f.id AS fragmento
+ORDER BY acta ASC, f.indice ASC
+\end{Verbatim}
+
+Salida del notebook:
+
+\begin{Verbatim}
+Ana Betty Valenciano Moscoso + "pésame":
+  61-2026#1, 61-2026#2
+
+Zeneida Chaves Fernández + "aprobación":
+  58-2026#0, 58-2026#1,
+  60-2026#0, 60-2026#1,
+  61-2026#0, 61-2026#1
+
+OK: dos saltos correctos para ambos casos
+\end{Verbatim}
+
+SQL equivalente:
+
+\begin{Verbatim}
+SELECT a.id AS acta, f.id AS fragmento
+FROM persona p
+JOIN participacion r ON r.persona_id = p.id
+JOIN acta a ON a.id = r.acta_id
+JOIN fragmento f ON f.acta_id = a.id
+WHERE p.nombre = :nombre
+  AND LOWER(f.texto) LIKE
+      '%' || LOWER(:palabra) || '%'
+ORDER BY a.id, f.indice;
+\end{Verbatim}
+
+\textbf{Comparación.}
+El TODO 3 requiere un \texttt{JOIN} en SQL para
+relacionar actas y fragmentos. El TODO 4 necesita
+tres \texttt{JOIN} porque la participación se
+representa mediante una tabla intermedia.
+Un tercer salto desde los fragmentos hacia otra
+entidad requeriría al menos un \texttt{JOIN}
+adicional, según el esquema relacional.
+En Cypher basta con extender el patrón mediante
+otra relación, lo que facilita expresar recorridos
+de varios saltos en el grafo.
 
 \section{\texttt{CREATE} contra \texttt{MERGE} (pregunta 4)}
 
