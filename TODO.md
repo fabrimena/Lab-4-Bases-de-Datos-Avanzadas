@@ -81,8 +81,8 @@ Por eso A hace primero los TODO 1 y 2 y los deja en `develop`; B y C parten de a
 - [X] Crear la rama `alisson` desde `develop` (con los TODO 1 y 2 ya fusionados)
 - [X] **TODO 3** (paso 6.1): un salto, fragmentos por acta con agregación → `OK`
 - [X] **TODO 4** (paso 6.2): dos saltos `Persona → Acta → Fragmento` filtrado por palabra → `OK`
-- [ ] Pregunta 3: consultas de los TODO 3 y 4 con su resultado, SQL equivalente y cuántos `JOIN` necesitaría un tercer salto
-- [ ] Pregunta 1: cuántos documentos publica el índice, cuántas actas entraron al grafo y qué haríamos con un PDF escaneado (cifras de la salida del paso 2)
+- [x] Pregunta 3: consultas de los TODO 3 y 4 con su resultado, SQL equivalente y cuántos `JOIN` necesitaría un tercer salto
+- [x] Pregunta 1: cuántos documentos publica el índice, cuántas actas entraron al grafo y qué haríamos con un PDF escaneado (cifras de la salida del paso 2)
 - [ ] PR de `alisson` a `develop`
 
 ## Checklist — Persona C
